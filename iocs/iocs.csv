@@ -1,0 +1,59 @@
+type,value,durability,context
+ipv4,166.88.134.62,volatile,C2 host (sample B) active; Evoxt Sdn. Bhd.
+ipv4,166.88.54.158,volatile,"C2 host (sample A) defunct; EVOXT, London, UK"
+uri_path,/0x/cls,volatile,stage-2 clb client-loader (XOR ciphertext)
+uri_path,/0x/ls,volatile,stage-2 boot loader (XOR ciphertext)
+uri_path,/0x/clb,volatile,"stage-3 RAT, JSON {inz, body:b64} then XOR"
+uri_path,/$/boot,volatile,stage-3 boot payload (XOR ciphertext)
+uri_path,/$/1,volatile,stage-3b Python infostealer (reversed-b64 + zlib)
+uri_path,/snv,volatile,process-environment secret exfiltration
+uri_path,/verify-human/<build-tag>,volatile,beacon / status reporting (NOT sandbox detection)
+uri_path,/u/e,volatile,hands the stealer the Telegram bot token + target chat
+uri_path,/u/f,volatile,multipart upload of the stolen-data archive
+uri_path,/socket.io,volatile,RAT command channel (WebSocket)
+http_header,Sec-V: A9-2896-1,sticky,"Campaign/build tag, sent on every request."
+http_user_agent,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",volatile,"Spoofed Chrome UA, sent from Node — a UA/stack mismatch is itself a signal."
+domain,1rpc.io/eth,volatile,Ethereum RPC provider abused for dead-drop lookup (legitimate service)
+domain,eth.drpc.org,volatile,Ethereum RPC provider abused for dead-drop lookup (legitimate service)
+domain,eth.blockscout.com,volatile,Ethereum RPC provider abused for dead-drop lookup (legitimate service)
+domain,eth-mainnet.public.blastapi.io,volatile,Ethereum RPC provider abused for dead-drop lookup (legitimate service)
+ipv4_falsepositive,163.34.229.243,n/a,DO NOT BLOCK: genesis-transaction placeholder; resolves to Norsk Hydro ASA
+ipv4_falsepositive,111.116.33.33,n/a,DO NOT BLOCK: ASCII-filler decode artifact; resolves to China CERNET
+eth_address,0xa322e5f3d311d3080e6f0121063e9adc2490ef1a,sticky,Dead-drop broadcaster wallet
+eth_address,0xa658863ea658863e68656c6c6f6970626f742121,sticky,Dead-drop recipient; bytes encode the C2 IP
+telegram_bot_id,7870147428,volatile,@file_1018_bot — exfil transport
+telegram_user_id,7699029999,volatile,@magicmeta — operator collection account
+xor_key,"q4FZkxX{!h,Sr3=@",sticky,16-byte key for /0x/clb
+file_pattern,*.inz.cjs,structural,IDE-injection loader sidecar
+tampered_file,@vscode/deviceid/dist/index.js  (VS Code / Cursor / Antigravity),structural,Rewritten to load the sidecar
+tampered_file,GitHub Desktop main.js,structural,Rewritten to load the sidecar
+path,~/.node_modules/node_modules/,structural,Runtime-installed RAT dependencies in a non-standard dir
+path,/tmp/get-pip.py,structural,Python stealer stage bootstrap
+path,/tmp/.pip,structural,Python stealer stage bootstrap
+path,/tmp/.npm,structural,Python stealer stage bootstrap
+path_pattern,/tmp/tmp<hex>.tmp,structural,Single-instance mutex lock
+path_pattern,/tmp/.npm/<hostname>$<username>_<YYMMDD>_<HHMMSS>/,structural,Harvest staging directory
+behaviour,node -> python3 -> pip,structural,"Also: node executing from ~/.node_modules; 'read browser Login Data / keychain, then connect out'."
+code_pattern,"file or module beginning with a bare `export default config;`, followed by ~230 spaces (or a long run of tabs) then the obfuscated loader on one line",structural,The padding pushes the payload off-screen in editors that do not wrap.
+npm_package,"fluid-type-ui@2.0.8, 2.0.9",volatile,MAL-2026-11136 GHSA-4w4v-pw3v-q85q — removed from registry
+npm_package,bianira-ui@1.27.0,volatile,MAL-2026-11132  — removed from registry
+npm_package,post-css-transfer@all,volatile,— removed from registry
+npm_package,scrollbar-hide-plugin@all,volatile,— removed from registry
+npm_package,tailwind-anim@all,volatile,— removed from registry
+npm_package,tailwind-animation-founder@all,volatile,— removed from registry
+npm_package,tailwindcss-anim@all,volatile,— removed from registry
+targeted_env_var,GITHUB_TOKEN,structural,Read by name and exfiltrated to /snv
+targeted_env_var,NPM_TOKEN,structural,Read by name and exfiltrated to /snv
+targeted_env_var,AWS_ACCESS_KEY_ID,structural,Read by name and exfiltrated to /snv
+targeted_env_var,AWS_SECRET_ACCESS_KEY,structural,Read by name and exfiltrated to /snv
+targeted_env_var,OPENAI_API_KEY,structural,Read by name and exfiltrated to /snv
+targeted_env_var,STRIPE_SECRET_KEY,structural,Read by name and exfiltrated to /snv
+targeted_env_var,DATABASE_URL,structural,Read by name and exfiltrated to /snv
+targeted_env_var,SUPABASE_SERVICE_ROLE_KEY,structural,Read by name and exfiltrated to /snv
+targeted_env_var,REDIS_URL,structural,Read by name and exfiltrated to /snv
+targeted_env_var,SENDGRID_API_KEY,structural,Read by name and exfiltrated to /snv
+targeted_env_var,TWILIO_AUTH_TOKEN,structural,Read by name and exfiltrated to /snv
+ipv4,166.88.54.158,volatile,Sample A C2 (defunct)
+http_header,Sec-V: A9-3925-6,sticky,Sample A campaign tag
+domain,api.trongrid.io,volatile,Sample A blockchain RPC abused
+domain,bsc-dataseed.binance.org,volatile,Sample A blockchain RPC abused

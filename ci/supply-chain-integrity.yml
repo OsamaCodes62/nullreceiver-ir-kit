@@ -1,0 +1,33 @@
+# Supply-Chain Integrity gate — NullReceiver-family + npm supply-chain hunt.
+# Static scan only (grep/find over the checked-out tree) — it NEVER runs
+# npm ci / install / build / node, so it cannot execute a malicious lifecycle
+# script from an untrusted PR. Detection logic lives in scan_repo.sh (ruleset:
+# RULESET.md); a HARD finding fails the job, WARN annotates only.
+#
+# ACTIVATE: copy this file to .github/workflows/ and scan_repo.sh to
+# .github/scan_repo.sh in your repo, then make this a REQUIRED status check on
+# main/develop (branch protection) so a red result actually blocks merge.
+name: Supply-Chain Integrity
+
+on:
+  pull_request:            # NOT pull_request_target — fork PRs run read-only, no secrets
+  push:
+    branches: [main, develop]
+
+permissions:
+  contents: read           # least privilege; annotations + exit code need no write scope
+
+jobs:
+  integrity:
+    runs-on: ubuntu-latest
+    steps:
+      # Pin to a full commit SHA in production (see RULESET.md CI policy):
+      #   uses: actions/checkout@<40-char-sha> # v4
+      - uses: actions/checkout@v4
+
+      - name: NullReceiver / supply-chain integrity scan
+        shell: bash
+        env:
+          CI: "1"          # emit ::error:: / ::warning:: annotations
+        # Last, un-piped command of the step -> its exit code gates the job.
+        run: bash .github/scan_repo.sh .

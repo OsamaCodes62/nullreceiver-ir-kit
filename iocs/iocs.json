@@ -1,0 +1,196 @@
+{
+  "schema": "nullreceiver-iocs/1.0",
+  "family": "NullReceiver",
+  "aliases": ["EtherHiding family", "Contagious Interview", "DPRK npm supply-chain"],
+  "related_public_clusters": ["BeaverTail", "InvisibleFerret", "OtterCookie"],
+  "advisories": {
+    "osv": ["MAL-2026-11136", "MAL-2026-11132"],
+    "ghsa": ["GHSA-4w4v-pw3v-q85q"]
+  },
+  "observation_window": {
+    "first_seen": "2026-05-07",
+    "last_confirmed_live": "2026-08-21"
+  },
+  "confidence_note": "All values below were observed directly in controlled sandbox detonations or read out of the sample's own string tables. See docs/02-analysis-reference.md for per-value provenance.",
+
+  "durability_tiers": {
+    "structural": "Technique-level artifacts. The operator cannot change these without rewriting the malware. Build detection here.",
+    "sticky": "Costly to rotate — requires updating or redistributing the loader.",
+    "volatile": "Rotatable in seconds. Refresh from threat intel; never make these the basis of detection."
+  },
+
+  "network": {
+    "c2_hosts": [
+      {
+        "value": "166.88.134.62",
+        "tier": "volatile",
+        "sample": "B",
+        "ports": [80, 443],
+        "asn": "AS149440",
+        "hosting": "Evoxt Sdn. Bhd.",
+        "geo": "London, UK",
+        "note": "Not hardcoded — resolved at runtime from the Ethereum dead-drop, so it is operator-rotatable at will. Confirmed stable 3.5+ weeks."
+      },
+      {
+        "value": "166.88.54.158",
+        "tier": "volatile",
+        "sample": "A",
+        "ports": [443],
+        "hosting": "EVOXT, London, UK",
+        "status": "defunct",
+        "note": "Same 166.88.0.0/16 range as Sample B."
+      }
+    ],
+    "c2_paths": [
+      { "path": "/0x/cls", "purpose": "stage-2 clb client-loader (XOR ciphertext)" },
+      { "path": "/0x/ls", "purpose": "stage-2 boot loader (XOR ciphertext)" },
+      { "path": "/0x/clb", "purpose": "stage-3 RAT, JSON {inz, body:b64} then XOR" },
+      { "path": "/$/boot", "purpose": "stage-3 boot payload (XOR ciphertext)" },
+      { "path": "/$/1", "purpose": "stage-3b Python infostealer (reversed-b64 + zlib)" },
+      { "path": "/snv", "purpose": "process-environment secret exfiltration" },
+      { "path": "/verify-human/<build-tag>", "purpose": "beacon / status reporting (NOT sandbox detection)" },
+      { "path": "/u/e", "purpose": "hands the stealer the Telegram bot token + target chat" },
+      { "path": "/u/f", "purpose": "multipart upload of the stolen-data archive" },
+      { "path": "/socket.io", "purpose": "RAT command channel (WebSocket)" }
+    ],
+    "http_markers": [
+      {
+        "type": "header",
+        "value": "Sec-V: A9-2896-1",
+        "tier": "sticky",
+        "note": "Campaign/build tag, sent on every request."
+      },
+      {
+        "type": "user_agent",
+        "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "note": "Spoofed Chrome UA, sent from Node — a UA/stack mismatch is itself a signal."
+      }
+    ],
+    "rpc_providers_abused": [
+      "1rpc.io/eth",
+      "eth.drpc.org",
+      "eth.blockscout.com",
+      "eth-mainnet.public.blastapi.io"
+    ],
+    "exfil_channels": [
+      { "type": "http", "value": "http://166.88.134.62/u/f", "note": "primary" },
+      { "type": "telegram", "value": "api.telegram.org/bot<token>/sendDocument", "note": "fallback; only for archives under 50 MB" }
+    ],
+    "not_c2_do_not_block": [
+      { "value": "163.34.229.243", "why": "genesis-transaction placeholder; resolves to Norsk Hydro ASA" },
+      { "value": "111.116.33.33", "why": "ASCII-filler decode artifact; resolves to China CERNET" }
+    ]
+  },
+
+  "blockchain": {
+    "deaddrop_broadcaster_wallet": {
+      "value": "0xa322e5f3d311d3080e6f0121063e9adc2490ef1a",
+      "tier": "sticky",
+      "chain": "ethereum",
+      "note": "C2 address is read from the most recent outbound tx from this wallet. Rotating it forces the operator to update or redistribute the loader — stickier than an IP, but still replaceable."
+    },
+    "deaddrop_recipient_wallet": {
+      "value": "0xa658863ea658863e68656c6c6f6970626f742121",
+      "chain": "ethereum",
+      "note": "Not a real recipient. The `to` field's bytes ARE the encoded C2 address. Trailing bytes spell 'helloipbot!!' in ASCII."
+    },
+    "mechanism": "EtherHiding: latest outbound tx from the broadcaster wallet, read via public RPC or the Blockscout REST API; C2 IPv4 decoded from bytes of the tx `to` field.",
+    "transaction_log": "iocs/blockchain/deaddrop-wallet-txs.csv"
+  },
+
+  "telegram": {
+    "bot_id": "7870147428",
+    "bot_username": "file_1018_bot",
+    "bot_display_name": "File Bot",
+    "bot_token": "7870147428:<BOT-TOKEN-SECRET-REDACTED>",
+    "operator_chat_id": "7699029999",
+    "operator_username": "magicmeta",
+    "operator_display_name": "Magic Meta",
+    "tier": "volatile",
+    "confirmed_live": "2026-08-21",
+    "methods_used": ["sendDocument"],
+    "redaction_note": "Token secret withheld from the public record; see docs/12-telegram-abuse-report.md."
+  },
+
+  "crypto": {
+    "xor_keys": [
+      {
+        "value": "q4FZkxX{!h,Sr3=@",
+        "length_bytes": 16,
+        "stage": "/0x/clb",
+        "note": "Stored in plaintext in the stage-2 loader."
+      }
+    ],
+    "archive_encryption": "AES-LZMA zip for the exfiltrated bundle"
+  },
+
+  "host_artifacts": {
+    "ide_injection": {
+      "tier": "structural",
+      "sidecar_pattern": "*.inz.cjs",
+      "tampered_targets": [
+        "@vscode/deviceid/dist/index.js  (VS Code / Cursor / Antigravity)",
+        "GitHub Desktop main.js"
+      ],
+      "note": "Highest-value detection. Structural: survives payload and indicator changes."
+    },
+    "runtime_dependencies": {
+      "tier": "structural",
+      "paths": ["~/.node_modules/node_modules/"],
+      "packages": ["socket.io-client", "ws", "axios"],
+      "note": "npm install performed at runtime into a non-standard directory."
+    },
+    "python_stage": {
+      "tier": "structural",
+      "paths": ["/tmp/get-pip.py", "/tmp/.pip", "/tmp/.npm"],
+      "mutex": "/tmp/tmp<hex>.tmp",
+      "note": "Single-instance lock file; `get-pip.py` bootstrap is the pivot from node to python."
+    },
+    "staging_dirs": {
+      "tier": "structural",
+      "pattern": "/tmp/.npm/<hostname>$<username>_<YYMMDD>_<HHMMSS>/",
+      "note": "Harvest staging area, named from host + user + timestamp."
+    },
+    "process_chain": {
+      "tier": "structural",
+      "value": "node -> python3 -> pip",
+      "note": "Also: node executing from ~/.node_modules; 'read browser Login Data / keychain, then connect out'."
+    },
+    "persistence": {
+      "linux": ["cron", "shell rc files", "systemd --user units"],
+      "macos": ["LaunchAgents", "LaunchDaemons"],
+      "windows": ["Run keys", "Startup folder", "Scheduled Tasks"]
+    },
+    "disguise_pattern": {
+      "tier": "structural",
+      "value": "file or module beginning with a bare `export default config;`, followed by ~230 spaces (or a long run of tabs) then the obfuscated loader on one line",
+      "note": "The padding pushes the payload off-screen in editors that do not wrap."
+    }
+  },
+
+  "npm_packages": [
+    { "name": "fluid-type-ui", "versions": ["2.0.8", "2.0.9"], "osv": "MAL-2026-11136", "ghsa": "GHSA-4w4v-pw3v-q85q", "status": "removed from registry" },
+    { "name": "bianira-ui", "versions": ["1.27.0"], "osv": "MAL-2026-11132", "status": "removed from registry" },
+    { "name": "post-css-transfer", "versions": [], "status": "removed from registry" },
+    { "name": "scrollbar-hide-plugin", "versions": [], "status": "removed from registry" },
+    { "name": "tailwind-anim", "versions": [], "status": "removed from registry" },
+    { "name": "tailwind-animation-founder", "versions": [], "status": "removed from registry" },
+    { "name": "tailwindcss-anim", "versions": [], "status": "removed from registry" }
+  ],
+
+  "targeted_env_vars": [
+    "GITHUB_TOKEN", "NPM_TOKEN", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY",
+    "OPENAI_API_KEY", "STRIPE_SECRET_KEY", "DATABASE_URL",
+    "SUPABASE_SERVICE_ROLE_KEY", "REDIS_URL", "SENDGRID_API_KEY",
+    "TWILIO_AUTH_TOKEN"
+  ],
+
+  "sample_a_secondary": {
+    "note": "Earlier, separate sample from the same cluster. Tron/Socket.IO dead-drop RAT.",
+    "c2": "166.88.54.158:443",
+    "campaign_tag": "A9-3925-6",
+    "protocol": "Socket.IO over HTTPS, transport=polling upgrading to websocket",
+    "endpoint_pattern": "/socket.io/?EIO=4&transport=polling&t=...",
+    "rpc_abused": ["api.trongrid.io", "bsc-dataseed.binance.org"]
+  }
+}

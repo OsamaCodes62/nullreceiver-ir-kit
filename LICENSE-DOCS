@@ -1,0 +1,23 @@
+Creative Commons Attribution 4.0 International (CC BY 4.0)
+
+Copyright (c) 2026 Osama Ehsaan
+
+The indicator sets in iocs/, the README, and ci/RULESET.md are licensed under
+the Creative Commons Attribution 4.0 International License.
+
+You are free to:
+  * Share  — copy and redistribute the material in any medium or format
+  * Adapt  — remix, transform, and build upon the material for any purpose,
+             including commercially
+
+Under the following terms:
+  * Attribution — You must give appropriate credit, provide a link to the
+    license, and indicate if changes were made.
+
+Full license text: https://creativecommons.org/licenses/by/4.0/legalcode
+
+Detections, signatures, and threat-intelligence feeds derived from the
+indicators in this repository are explicitly encouraged. Attribution is
+appreciated but a signature does not need a citation to be useful.
+
+NOT COVERED: the scan/quarantine scripts and CI tooling (MIT — see LICENSE).

@@ -1,0 +1,12 @@
+# OS
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# scanner output — quarantine trees are per-machine and may hold real user data
+nullreceiver_quarantine_*/
+scan_report_*.txt
+
+# selftest scratch trees
+selftest_tmp/
+*.tmp
